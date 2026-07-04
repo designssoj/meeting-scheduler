@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>모두의 한 시간 — 6명이 회의 일정을 잡는 경험</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --ink:#191F28; --sub:#4E5968; --mut:#8B95A1; --line:#E7EBF0;
+  --bg:#F4F6F8; --card:#FFFFFF; --soft-bg:#F7F8FA;
+  --green:#00A05E; --green-bg:#E9F7F0; --green-line:#BFE8D4;
+  --amber:#C77700; --amber-bg:#FFF4E0;
+  --no:#B0B8C1; --no-bg:#F2F4F6;
+  --r-lg:22px; --r-md:16px; --r-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+  background:var(--bg); color:var(--ink);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:100vh; padding:28px 16px; gap:18px;
+  letter-spacing:-0.01em;
+}
+/* ---------- phone frame ---------- */
+.frame{
+  width:min(393px,100%); height:min(800px, calc(100vh - 120px)); min-height:620px;
+  background:var(--card); border-radius:34px; overflow:hidden; position:relative;
+  box-shadow:0 24px 60px rgba(25,31,40,.14), 0 2px 8px rgba(25,31,40,.06);
+}
+.screen{
+  position:absolute; inset:0; background:var(--card);
+  display:flex; flex-direction:column;
+  transform:translateX(28px); opacity:0; pointer-events:none;
+  transition:transform .34s cubic-bezier(.22,1,.3,1), opacity .28s ease;
+}
+.screen.on{transform:translateX(0); opacity:1; pointer-events:auto}
+.screen.left{transform:translateX(-24px)}
+.top{
+  padding:22px 22px 12px; display:flex; align-items:center; gap:10px; flex:none;
+}
+.back{
+  width:34px;height:34px;border:none;background:var(--soft-bg);border-radius:50%;
+  cursor:pointer;color:var(--sub);font-size:16px;display:flex;align-items:center;justify-content:center;
+}
+.top h1{font-size:19px;font-weight:700;letter-spacing:-0.02em}
+.body{flex:1; overflow-y:auto; padding:6px 22px 20px; scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex:none; padding:12px 22px 22px; background:linear-gradient(to top, #fff 70%, rgba(255,255,255,0))}
+.cta{
+  width:100%; padding:16px; border:none; border-radius:var(--r-md);
+  background:var(--ink); color:#fff; font-family:inherit;
+  font-size:16px; font-weight:600; cursor:pointer; letter-spacing:-0.01em;
+  transition:transform .12s ease, opacity .2s;
+}
+.cta:active{transform:scale(.985)}
+.cta.ghost{background:var(--soft-bg); color:var(--sub)}
+.eyebrow{font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:6px}
+.lede{font-size:15px;color:#333D4B;line-height:1.6;word-break:keep-all}
+
+/* ---------- create ---------- */
+.field{margin-top:18px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:8px}
+.field input[type=text]{
+  width:100%; padding:14px 16px; font-size:16px; font-weight:600; font-family:inherit;
+  border:1.5px solid var(--line); border-radius:var(--r-md); color:var(--ink); background:#fff;
+}
+.field input[type=text]:focus{outline:none;border-color:var(--ink)}
+.meta-row{display:flex; gap:8px; margin-top:10px}
+.meta-chip{
+  flex:1; padding:12px 10px; border-radius:var(--r-md); background:var(--soft-bg);
+  text-align:center;
+}
+.meta-chip b{display:block;font-size:15px;font-weight:700;white-space:nowrap}
+.meta-chip span{font-size:12px;color:var(--mut);font-weight:500;white-space:nowrap}
+.p-row{
+  display:flex; align-items:center; gap:12px; padding:13px 0;
+  border-bottom:1px solid var(--soft-bg);
+}
+.p-row:last-child{border-bottom:none}
+.ava{
+  width:38px;height:38px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13.5px;font-weight:700;color:#fff;
+}
+.p-name{flex:1;min-width:0}
+.p-name b{display:block;font-size:15px;font-weight:600}
+.p-name span{font-size:12px;color:var(--mut)}
+.seg{
+  display:flex; background:var(--soft-bg); border-radius:11px; padding:3px; flex:none;
+}
+.seg button{
+  border:none; background:transparent; font-family:inherit; cursor:pointer;
+  font-size:12.5px; font-weight:600; color:var(--mut); padding:6px 11px; border-radius:8px;
+  transition:all .15s;
+}
+.seg button.sel{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(25,31,40,.10)}
+.seg.locked{opacity:.55; pointer-events:none}
+.hint{font-size:13px;color:#6B7684;margin-top:14px;line-height:1.6;word-break:keep-all}
+
+/* ---------- respond ---------- */
+.pov{
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--soft-bg); border-radius:100px; padding:7px 13px 7px 8px;
+  font-size:12.5px; font-weight:600; color:var(--sub); margin-bottom:14px;
+}
+.pov .ava{width:22px;height:22px;font-size:9.5px}
+.grid-wrap{background:var(--soft-bg); border-radius:var(--r-lg); padding:16px 14px 14px; margin-top:14px}
+.grid-head{display:grid; grid-template-columns:34px repeat(5,1fr); gap:4px; margin-bottom:6px}
+.grid-head span{font-size:11px;font-weight:600;color:var(--sub);text-align:center}
+.grid-head span i{display:block;font-style:normal;font-size:9px;font-weight:500;color:var(--mut);margin-top:1px}
+.grid{display:grid; grid-template-columns:34px repeat(5,1fr); gap:4px}
+.grid .h{font-size:10.5px;color:var(--mut);display:flex;align-items:center;justify-content:center}
+.cell{
+  height:26px; border-radius:7px; background:#fff; border:1px solid var(--line);
+  cursor:pointer; transition:all .12s; position:relative;
+}
+.cell.no{background:var(--ink); border-color:var(--ink)}
+.cell.no::after{content:"×"; position:absolute; inset:0; color:#fff; font-size:11px;
+  display:flex;align-items:center;justify-content:center; font-weight:600}
+.cell.soft{background:#FFCF70; border-color:#FFCF70}
+.cell.soft::after{content:"–"; position:absolute; inset:0; color:#8A5A00; font-size:11px;
+  display:flex;align-items:center;justify-content:center; font-weight:700}
+.prefill-note{font-size:11.5px; color:var(--mut); line-height:1.55; margin-top:10px; word-break:keep-all}
+.lunch-row{
+  grid-column:2 / -1; height:26px; border-radius:7px;
+  background:repeating-linear-gradient(-45deg,#fff,#fff 4px,var(--soft-bg) 4px,var(--soft-bg) 8px);
+  border:1px dashed var(--line); color:var(--mut);
+  font-size:10px; font-weight:600; display:flex; align-items:center; justify-content:center;
+  letter-spacing:0.02em;
+}
+.legend{display:flex; gap:14px; margin-top:12px; padding:0 2px}
+.legend div{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mut);font-weight:500}
+.dot{width:11px;height:11px;border-radius:4px;flex:none}
+.pref-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.pchip{
+  border:1.5px solid var(--line); background:#fff; border-radius:100px;
+  padding:9px 14px; font-size:13.5px; font-weight:500; font-family:inherit;
+  color:var(--sub); cursor:pointer; transition:all .15s;
+}
+.pchip.sel{border-color:var(--ink); background:var(--ink); color:#fff}
+.pchip.addc{border-style:dashed; color:var(--mut)}
+.custom-row{display:flex; gap:8px; margin-top:10px}
+.custom-row input{flex:1; min-width:0; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px;
+  font-family:inherit; font-size:13.5px; color:var(--ink)}
+.custom-row input:focus{outline:none; border-color:var(--ink)}
+.custom-row button{padding:0 16px; border:none; border-radius:12px; background:var(--ink); color:#fff;
+  font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer}
+
+/* 후보 카드 — 사람 단위 상태 행 */
+.fitrow{display:flex; align-items:flex-end; gap:12px; margin:13px 0 11px}
+.fr-group{display:flex; flex-direction:column; gap:6px}
+.fr-avas{display:flex; gap:6px}
+.fr-group>span{font-size:10.5px; color:var(--mut); font-weight:600}
+.fr-div{width:1px; align-self:stretch; background:var(--line)}
+.fava{position:relative; width:27px; height:27px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11.5px; font-weight:700; color:#fff}
+.fava.no{background:var(--no-bg); color:var(--mut)}
+.fava.out{background:#fff; border:1.5px dashed var(--no); color:var(--no)}
+.fbd{position:absolute; right:-4px; bottom:-4px; width:13px; height:13px; border-radius:50%;
+  font-style:normal; font-size:9px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; border:1.5px solid #fff}
+.fbd.soft{background:#F5B83D; color:#5C3D00}
+.fbd.no{background:#8B95A1; color:#fff}
+.lever-note{font-size:12.5px; color:var(--sub); margin-top:9px; background:var(--soft-bg);
+  border-radius:10px; padding:9px 12px; line-height:1.5; word-break:keep-all}
+.sent-list{background:var(--soft-bg); border-radius:var(--r-lg); padding:8px 18px; margin-top:16px}
+.sent-list .sd-row{border-bottom:1px solid #fff}
+.sent-list .sd-row:last-child{border-bottom:none}
+.rank-ctx{font-size:12.5px; color:var(--mut); font-weight:600; margin-bottom:10px}
+
+/* ---------- rank ---------- */
+.banner{
+  background:var(--soft-bg); border-radius:var(--r-lg); padding:16px 18px; margin-bottom:14px;
+  transition:background .3s;
+}
+.banner b{font-size:16px; font-weight:700; letter-spacing:-0.02em; display:block; margin-bottom:4px}
+.banner p{font-size:13.5px; color:var(--sub); line-height:1.6; word-break:keep-all}
+.banner.good{background:var(--green-bg)}
+.banner.good b{color:var(--green)}
+.lever{margin-bottom:16px}
+.lever-label{font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:9px}
+.lever-row{display:flex; flex-wrap:wrap; gap:7px}
+.lchip{
+  display:flex; align-items:center; gap:7px;
+  border:1.5px solid var(--line); background:#fff; border-radius:100px;
+  padding:6px 12px 6px 7px; font-size:12.5px; font-weight:600; font-family:inherit;
+  color:var(--ink); cursor:pointer; transition:all .18s;
+}
+.lchip .ava{width:22px;height:22px;font-size:9.5px}
+.lchip:active{transform:scale(.95)}
+.cell:active{transform:scale(.9)}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+}
+.lchip .role{font-size:10.5px;color:var(--mut);font-weight:500;margin-left:1px}
+.lchip.req{background:var(--soft-bg); border-color:transparent; cursor:default}
+.lchip.opt.off{opacity:.92; border-style:dashed; color:var(--mut)}
+.lchip.opt.off .ava{filter:grayscale(1); opacity:.55}
+.lchip.opt.off .p-nm{text-decoration:line-through}
+.sec-label{font-size:12.5px;font-weight:600;color:var(--mut); margin:20px 2px 10px; display:flex; align-items:center; gap:6px}
+.slot{
+  border:1.5px solid var(--line); border-radius:var(--r-lg);
+  padding:16px 18px 15px; margin-bottom:10px; background:#fff;
+  box-shadow:0 1px 3px rgba(25,31,40,.04);
+  transition:border-color .25s, background .25s, box-shadow .25s;
+  will-change:transform;
+}
+.slot.best{border-color:var(--green-line); box-shadow:0 4px 14px rgba(0,160,94,.08)}
+.slot.full{border-color:var(--green); background:var(--green-bg); box-shadow:0 6px 18px rgba(0,160,94,.12)}
+.slot.dim{opacity:.62; background:var(--soft-bg); border-color:transparent; box-shadow:none}
+.slot.enter{animation:cardIn .4s cubic-bezier(.22,1,.3,1) both}
+@keyframes cardIn{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)}}
+.slot-top{display:flex; align-items:baseline; gap:8px}
+.slot-top b{font-size:17px; font-weight:700; letter-spacing:-0.02em}
+.slot-top span{font-size:13px; color:var(--mut); font-weight:500}
+.tag{
+  margin-left:auto; font-size:11px; font-weight:700; border-radius:100px; padding:4px 9px; flex:none;
+}
+.tag.g{background:var(--green-bg); color:var(--green)}
+.tag.g2{background:var(--green); color:#fff; animation:tagpop .38s cubic-bezier(.2,1.6,.4,1) both}
+.tag.n{background:var(--no-bg); color:var(--mut)}
+@keyframes tagpop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.reason{font-size:14px; color:#333D4B; line-height:1.6; word-break:keep-all}
+.reason b{color:var(--ink); font-weight:600}
+.slot-detail{
+  max-height:0; overflow:hidden; transition:max-height .3s ease;
+}
+.slot-detail.open{max-height:400px}
+.sd-inner{border-top:1px solid var(--soft-bg); margin-top:13px; padding-top:6px}
+.sd-row{display:flex; align-items:center; gap:10px; padding:8px 0}
+.sd-row .ava{width:28px;height:28px;font-size:11px}
+.sd-row.out .ava{filter:grayscale(1);opacity:.5}
+.sd-name{font-size:13.5px; font-weight:600; width:64px; flex:none}
+.sd-name em{display:block; font-style:normal; font-size:10.5px; color:var(--mut); font-weight:500}
+.sd-st{font-size:12.5px; flex:1; text-align:right; font-weight:500}
+.sd-st.ok{color:var(--green)} .sd-st.soft{color:var(--amber)} .sd-st.no{color:var(--mut)}
+.slot-actions{display:flex; gap:8px; margin-top:13px}
+.s-btn{
+  flex:1; padding:11px; border-radius:12px; border:none; font-family:inherit;
+  font-size:13.5px; font-weight:600; cursor:pointer; transition:transform .1s;
+}
+.s-btn:active{transform:scale(.98)}
+.s-btn.pick{background:var(--ink); color:#fff}
+.s-btn.more{background:var(--soft-bg); color:var(--sub)}
+.slot.dim .s-btn.pick{display:none}
+
+/* ---------- confirm ---------- */
+.picked{
+  background:var(--ink); color:#fff; border-radius:var(--r-lg); padding:20px 20px 18px;
+}
+.picked .eyebrow{color:rgba(255,255,255,.55)}
+.picked b{font-size:22px; font-weight:700; letter-spacing:-0.02em}
+.picked p{font-size:13px; color:rgba(255,255,255,.65); margin-top:4px}
+.card{
+  border:1.5px solid var(--line); border-radius:var(--r-lg); padding:16px 18px; margin-top:12px;
+}
+.card h3{font-size:13px; font-weight:700; color:var(--mut); margin-bottom:4px}
+.trade{display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--soft-bg); align-items:flex-start}
+.trade:last-child{border-bottom:none}
+.trade input{margin-top:3px; width:17px; height:17px; accent-color:var(--ink); flex:none}
+.trade div b{font-size:14px; font-weight:600; display:block}
+.trade div span{font-size:12.5px; color:var(--mut); line-height:1.5; display:block; margin-top:2px}
+.all-good{display:flex; align-items:center; gap:10px; padding:6px 0}
+.all-good .ok-ic{width:26px;height:26px;border-radius:50%;background:var(--green-bg);color:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+.all-good p{font-size:13.5px;color:var(--sub);line-height:1.5}
+
+/* ---------- done ---------- */
+.done-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 30px; text-align:center}
+.done-ic{
+  width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  animation:pop .5s cubic-bezier(.2,1.6,.4,1) both; margin-bottom:20px;
+}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.done-wrap h2{font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px}
+.done-wrap>p{font-size:14px; color:var(--sub); line-height:1.6}
+.done-list{width:100%; margin-top:26px; text-align:left; background:var(--soft-bg); border-radius:var(--r-lg); padding:8px 18px}
+.done-list .sd-row{border-bottom:1px solid #fff}
+.done-list .sd-row:last-child{border-bottom:none}
+
+/* ---------- role strip (조율자/참석자 구분) ---------- */
+.screen::before{content:""; position:absolute; top:0; left:0; right:0; height:3px; z-index:2}
+.screen.coord::before{background:#3E7BFA}
+.screen.part::before{background:#8E7CF0}
+
+/* ---------- reviewer nav ---------- */
+.rnav{display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; justify-content:center}
+.rnav .grp{display:flex; flex-direction:column; gap:7px; align-items:center}
+.rnav .grp em{
+  font-style:normal; font-size:11px; font-weight:700; color:var(--mut);
+  display:flex; align-items:center; gap:5px; letter-spacing:0;
+}
+.rnav .grp em i{width:7px;height:7px;border-radius:50%;flex:none}
+.rnav .grp.coord em i{background:#3E7BFA}
+.rnav .grp.part em i{background:#8E7CF0}
+.rnav .row{display:flex; gap:6px; flex-wrap:wrap; justify-content:center}
+.rnav button{
+  border:none; background:#fff; border:1px solid var(--line); border-radius:100px;
+  font-family:inherit; font-size:12px; font-weight:600; color:var(--sub);
+  padding:7px 13px; cursor:pointer; transition:all .15s;
+}
+.rnav button.cur{background:var(--ink); border-color:var(--ink); color:#fff}
+/* 받은 초대 화면 */
+.inv-msg{
+  background:var(--soft-bg); border-radius:var(--r-lg); padding:16px 18px; margin-top:14px;
+}
+.inv-msg .im-from{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.inv-msg .im-from b{font-size:13px; font-weight:600}
+.inv-msg .im-from span{font-size:11.5px; color:var(--mut)}
+.inv-msg p{font-size:14px; color:#333D4B; line-height:1.65; word-break:keep-all}
+.inv-time{
+  background:var(--ink); color:#fff; border-radius:var(--r-lg); padding:18px 20px; margin-top:14px;
+}
+.inv-time .eyebrow{color:rgba(255,255,255,.55)}
+.inv-time b{font-size:21px; font-weight:700; letter-spacing:-0.02em; display:block}
+.inv-time p{font-size:13px; color:rgba(255,255,255,.65); margin-top:4px}
+.inv-time.off{background:var(--soft-bg); border:1.5px dashed var(--line)}
+.inv-time.off .eyebrow{color:var(--mut)}
+.inv-time.off b{color:var(--mut); text-decoration:line-through; text-decoration-thickness:1.5px}
+.inv-time.off p{color:var(--mut)}
+.rsum{background:var(--soft-bg); border-radius:var(--r-lg); padding:8px 18px; margin-top:22px; width:100%; text-align:left}
+.rsum .sd-row{border-bottom:1px solid #fff}
+.rsum .sd-row:last-child{border-bottom:none}
+.rsum .sd-k{font-size:13.5px; font-weight:600; flex:none; white-space:nowrap}
+.rsum .sd-v{font-size:12.5px; color:var(--sub); text-align:right; flex:1; line-height:1.5; word-break:keep-all}
+/* 받은 초대 — 응답 완료 상태 */
+.inv-ok{
+  display:flex; align-items:center; gap:12px;
+  background:var(--green-bg); border-radius:var(--r-lg); padding:16px 18px; margin-bottom:14px;
+  animation:cardIn .4s cubic-bezier(.22,1,.3,1) both;
+}
+.inv-ok .ok-ic{
+  width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;
+  animation:pop .5s cubic-bezier(.2,1.6,.4,1) both;
+}
+.inv-ok b{display:block;font-size:15px;font-weight:700;color:var(--green);letter-spacing:-0.02em}
+.inv-ok span{font-size:12.5px;color:var(--sub);line-height:1.5;display:block;margin-top:2px;word-break:keep-all}
+@media (max-height:720px){ body{padding:14px 12px; gap:10px} .frame{border-radius:26px} }
+</style>
+</head>
+<body>
+
+<div class="frame" id="frame">
+
+  <!-- ① CREATE -->
+  <section class="screen on coord" id="sc-create">
+    <div class="top"><h1>회의 만들기</h1></div>
+    <div class="body">
+      <p class="lede">꼭 와야 하는 사람부터 정해요.<br>시간은 그다음이에요.</p>
+      <div class="field">
+        <label>회의 이름</label>
+        <input type="text" value="3분기 킥오프" id="mtitle">
+      </div>
+      <div class="meta-row">
+        <div class="meta-chip"><b>1시간</b><span>회의 길이</span></div>
+        <div class="meta-chip"><b>7.13 – 7.17</b><span>다음 주 안에</span></div>
+        <div class="meta-chip"><b>6명</b><span>참석자</span></div>
+      </div>
+      <div class="field">
+        <label>참석자</label>
+        <div id="plist"></div>
+      </div>
+      <p class="hint">필참은 없으면 회의가 안 되는 사람이에요.<br>선택은 없어도 진행할 수 있는 사람이에요.<br>이 구분이 시간을 고르는 기준이 돼요.</p>
+    </div>
+    <div class="foot"><button class="cta" onclick="go('sc-sent')">참석자에게 물어보기</button></div>
+  </section>
+
+  <!-- ①.5 SENT (coordinator POV, POV switch bridge) -->
+  <section class="screen coord" id="sc-sent">
+    <div class="top">
+      <button class="back" onclick="go('sc-create')">‹</button>
+      <h1>참석자에게 물어봤어요</h1>
+    </div>
+    <div class="body">
+      <p class="lede">‘<span id="sTitle">3분기 킥오프</span>’ 링크를 5명에게 보냈어요.<br>참석자는 로그인 없이 바로 답할 수 있어요.</p>
+      <div class="sent-list" id="sentList"></div>
+      <p class="hint">응답이 모두 모이면 알려드릴게요.<br>먼저 답한 사람의 조건부터 반영돼요.</p>
+    </div>
+    <div class="foot"><button class="cta" onclick="go('sc-respond')">참석자가 받는 화면 보기</button></div>
+  </section>
+
+  <!-- ② RESPOND (participant POV) -->
+  <section class="screen part" id="sc-respond">
+    <div class="top">
+      <button class="back" onclick="go('sc-sent')">‹</button>
+      <h1>안 되는 시간 알려주기</h1>
+    </div>
+    <div class="body">
+      <p class="lede">김지수님이 다음 주에 1시간짜리 ‘<span id="rTitle">3분기 킥오프</span>’ 회의를 잡고 있어요. 한 번 누르면 <b>안 돼요</b>, 두 번 누르면 <b>피하고 싶어요</b>예요.</p>
+      <div class="grid-wrap">
+        <div class="grid-head"><span></span><span>월<i>7.13</i></span><span>화<i>7.14</i></span><span>수<i>7.15</i></span><span>목<i>7.16</i></span><span>금<i>7.17</i></span></div>
+        <div class="grid" id="grid"></div>
+        <div class="legend">
+          <div><span class="dot" style="background:var(--ink)"></span>안 돼요</div>
+          <div><span class="dot" style="background:#FFCF70"></span>피하고 싶어요</div>
+          <div><span class="dot" style="background:#fff;border:1px solid var(--line)"></span>가능해요</div>
+        </div>
+        <p class="prefill-note">반복 일정은 한 번만 알려주면 기억해요.<br>지난번에 답한 매일 스크럼과 월요일 세미나는 미리 채워뒀어요.</p>
+      </div>
+      <div class="field">
+        <label>평소엔 어떤 편인가요?</label>
+        <div class="pref-chips">
+          <button class="pchip" data-pref="early" onclick="togglePref('early', this)">이른 아침은 피하고 싶어요</button>
+          <button class="pchip" data-pref="lunch" onclick="togglePref('lunch', this)">점심 직후는 피하고 싶어요</button>
+          <button class="pchip" data-pref="late" onclick="togglePref('late', this)">늦은 오후는 피하고 싶어요</button>
+          <button class="pchip sel" data-pref="morning" onclick="togglePref('morning', this)">오전이 좋아요</button>
+          <span id="customChips" style="display:contents"></span>
+          <button class="pchip addc" onclick="showCustom()">+ 직접 입력</button>
+        </div>
+        <div class="custom-row" id="customRow" hidden>
+          <input id="customInput" placeholder="예: 회의를 연달아 하긴 어려워요" onkeydown="if(event.key==='Enter')addCustom()">
+          <button onclick="addCustom()">추가</button>
+        </div>
+      </div>
+      <p class="hint">‘안 돼요’와 ‘피하고 싶어요’는 다르게 계산해요.<br>여기서 답한 내용이 다음 화면에 그대로 반영돼요.</p>
+    </div>
+    <div class="foot"><button class="cta" onclick="go('sc-r-done')">보내기</button></div>
+  </section>
+
+  <!-- ②.5 R-DONE (participant POV — 응답 완료) -->
+  <section class="screen part" id="sc-r-done">
+    <div class="done-wrap">
+      <div class="done-ic">✓</div>
+      <h2>답변을 보냈어요</h2>
+      <p>지수님에게는 이렇게 전달돼요.<br>시간이 정해지면 다시 알려드릴게요.</p>
+      <div class="rsum" id="rsum"></div>
+    </div>
+    <div class="foot"><button class="cta" onclick="go('sc-rank')">지수님 화면에서 이어 보기</button></div>
+  </section>
+
+  <!-- ③ RANK -->
+  <section class="screen coord" id="sc-rank">
+    <div class="top">
+      <button class="back" onclick="go('sc-respond')">‹</button>
+      <h1>시간 고르기</h1>
+    </div>
+    <div class="body">
+      <div class="rank-ctx" id="rankCtx"></div>
+      <div class="banner" id="banner"></div>
+      <div class="lever">
+        <div class="lever-label">선택 참석자는 눌러서 빼고 볼 수 있어요</div>
+        <div class="lever-row" id="lever"></div>
+        <div class="lever-note" id="leverNote" hidden></div>
+      </div>
+      <div id="slots"></div>
+    </div>
+  </section>
+
+  <!-- ④ CONFIRM -->
+  <section class="screen coord" id="sc-confirm">
+    <div class="top">
+      <button class="back" onclick="go('sc-rank')">‹</button>
+      <h1>이 시간으로 잡을까요?</h1>
+    </div>
+    <div class="body" id="confirm-body"></div>
+    <div class="foot"><button class="cta" id="confirm-cta" onclick="go('sc-done'); renderDone()">확정하고 초대 보내기</button></div>
+  </section>
+
+  <!-- ⑤ DONE -->
+  <section class="screen coord" id="sc-done">
+    <div class="done-wrap">
+      <div class="done-ic">✓</div>
+      <h2 id="done-title"></h2>
+      <p>초대장과 함께, 각자의 상황에 맞는 안내를 따로 보냈어요.</p>
+      <div class="done-list" id="done-list"></div>
+    </div>
+    <div class="foot" style="display:flex;flex-direction:column;gap:8px">
+      <button class="cta" onclick="renderInvite(); go('sc-invite')">민지님이 받은 초대 보기</button>
+      <button class="cta ghost" onclick="resetAll()">처음부터 다시 보기</button>
+    </div>
+  </section>
+
+  <!-- ⑥ INVITE (participant POV — 받은 초대) -->
+  <section class="screen part" id="sc-invite">
+    <div class="top">
+      <button class="back" onclick="go('sc-done')">‹</button>
+      <h1>받은 초대</h1>
+    </div>
+    <div class="body" id="invite-body"></div>
+    <div class="foot"><button class="cta" id="invite-cta" onclick="resetAll()">처음부터 다시 보기</button></div>
+  </section>
+
+</div>
+
+<nav class="rnav" id="rnav">
+  <div class="grp coord">
+    <em><i></i>회의를 만드는 사람 · 지수</em>
+    <div class="row">
+      <button data-s="sc-create" class="cur">만들기</button>
+      <button data-s="sc-rank">시간 결정</button>
+      <button data-s="sc-done">확정</button>
+    </div>
+  </div>
+  <div class="grp part">
+    <em><i></i>회의에 참석하는 사람 · 민지</em>
+    <div class="row">
+      <button data-s="sc-respond">조건 답하기</button>
+      <button data-s="sc-invite">받은 초대</button>
+    </div>
+  </div>
+</nav>
+
+<script>
+/* ---------------- data ---------------- */
+const PEOPLE = [
+  {id:'jisu',   name:'김지수', short:'지수', color:'#3E7BFA', role:'req', sub:'나 · 조율자', lock:true},
+  {id:'doyun',  name:'박도윤', short:'도윤', color:'#F0725C', role:'req', sub:'화·목 종일 외근'},
+  {id:'seoyeon',name:'이서연', short:'서연', color:'#2FB8A6', role:'req', sub:'점심 직후는 피하고 싶어요'},
+  {id:'jaehyun',name:'정재현', short:'재현', color:'#E8A13A', role:'req', sub:'수요일 오후 반차'},
+  {id:'minji',  name:'최민지', short:'민지', color:'#8E7CF0', role:'opt', sub:'매일 10–11시 스크럼'},
+  {id:'jiwoo',  name:'한지우', short:'지우', color:'#5CA5D9', role:'opt', sub:'금요일 외근 · 오전 선호'},
+];
+/* d: 0=월 … 4=금 / h: 시작 시각. status: ok | soft | no */
+const SLOTS = [
+  {id:'w10',  d:2, h:10, day:'수', date:'7월 15일', time:'10:00 – 11:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['ok'], jaehyun:['ok','오후 반차 전이라 가능해요'], jiwoo:['ok','선호하는 오전이에요']}},
+  {id:'f11',  d:4, h:11, day:'금', date:'7월 17일', time:'11:00 – 12:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['ok'], jaehyun:['ok'], jiwoo:['no','금요일은 종일 외근이에요']}},
+  {id:'m15',  d:0, h:15, day:'월', date:'7월 13일', time:'15:00 – 16:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['ok'], jaehyun:['ok'], jiwoo:['soft','오전을 선호해요']}},
+  {id:'f13',  d:4, h:13, day:'금', date:'7월 17일', time:'13:00 – 14:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['soft','점심 직후는 피하고 싶어해요'], jaehyun:['ok'], jiwoo:['no','금요일은 종일 외근이에요']}},
+  {id:'m13',  d:0, h:13, day:'월', date:'7월 13일', time:'13:00 – 14:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['soft','점심 직후는 피하고 싶어해요'], jaehyun:['ok'], jiwoo:['soft','오전을 선호해요']}},
+  {id:'t16',  d:1, h:16, day:'화', date:'7월 14일', time:'16:00 – 17:00',
+   st:{jisu:['ok'], doyun:['no','화요일은 종일 외근이에요'], seoyeon:['ok'], jaehyun:['ok'], jiwoo:['ok']}},
+  {id:'w15',  d:2, h:15, day:'수', date:'7월 15일', time:'15:00 – 16:00',
+   st:{jisu:['ok'], doyun:['ok'], seoyeon:['ok'], jaehyun:['no','수요일 오후는 반차예요'], jiwoo:['ok']}},
+  {id:'th11', d:3, h:11, day:'목', date:'7월 16일', time:'11:00 – 12:00',
+   st:{jisu:['ok'], doyun:['no','목요일은 종일 외근이에요'], seoyeon:['ok'], jaehyun:['ok'], jiwoo:['ok','선호하는 오전이에요']}},
+];
+const STXT = {ok:'가능해요', soft:'되지만 아쉬워요', no:'어려워요'};
+
+/* ----- 민지의 응답 상태 — 응답 화면 입력이 그대로 랭킹에 반영돼요 ----- */
+const minjiNo = new Set();                  // "d-h" · 안 돼요
+const minjiSoft = new Set();                // "d-h" · 피하고 싶어요
+for(let d=0; d<5; d++) minjiNo.add(d+'-10');      // 매일 10–11시 스크럼 (반복 일정 기억)
+for(let h=13; h<=17; h++) minjiNo.add('0-'+h);    // 매주 월요일 오후 팀 세미나 (반복 일정 기억)
+const minjiPrefs = {early:false, lunch:false, morning:true, late:false};
+const CHIP_CELLS = {
+  early: [...Array(5)].map((_,d)=>d+'-9'),
+  lunch: [...Array(5)].map((_,d)=>d+'-13'),
+  late:  [...Array(5)].flatMap((_,d)=>[d+'-16', d+'-17']),
+};
+
+function minjiStatus(slot){
+  const k = slot.d+'-'+slot.h;
+  if(minjiNo.has(k)){
+    if(slot.h===10) return ['no','매일 10–11시 스크럼이 있어요'];
+    if(slot.d===0 && slot.h>=13) return ['no','매주 월요일 오후 팀 세미나가 있어요'];
+    return ['no','안 되는 시간이라고 답했어요'];
+  }
+  if(minjiSoft.has(k)){
+    if(slot.h===9) return ['soft','이른 아침은 피하고 싶어해요'];
+    if(slot.h===13) return ['soft','점심 직후는 피하고 싶어해요'];
+    if(slot.h>=16) return ['soft','늦은 오후는 피하고 싶어해요'];
+    return ['soft','피하고 싶은 시간이라고 답했어요'];
+  }
+  if(minjiPrefs.morning && slot.h<=11) return ['ok','선호하는 오전이에요'];
+  return ['ok'];
+}
+function getStatus(slot, x){
+  return x.id==='minji' ? minjiStatus(slot) : slot.st[x.id];
+}
+
+let excluded = new Set();
+let openDetail = new Set();
+let pickedSlot = null;
+
+/* ---------------- helpers ---------------- */
+const $ = s => document.querySelector(s);
+const p = id => PEOPLE.find(x=>x.id===id);
+function ava(person, cls=''){ return `<span class="ava ${cls}" style="background:${person.color}">${person.short}</span>`; }
+
+function mTitle(){
+  const v = document.getElementById('mtitle').value.trim();
+  return v || '회의';
+}
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('on');
+    s.classList.toggle('left', order(s.id) < order(id));
+  });
+  $('#'+id).classList.add('on');
+  document.querySelectorAll('.rnav button').forEach(b=>{
+    const target = b.dataset.s;
+    b.classList.toggle('cur', target===id
+      || (id==='sc-confirm' && target==='sc-rank')
+      || (id==='sc-sent' && target==='sc-create')
+      || (id==='sc-r-done' && target==='sc-respond'));
+  });
+  if(id==='sc-sent') renderSent();
+  if(id==='sc-respond') $('#rTitle').textContent = mTitle();
+  if(id==='sc-r-done') renderRDone();
+  if(id==='sc-rank'){
+    $('#rankCtx').textContent = `${mTitle()} · 1시간 · 7월 13일 – 17일`;
+    renderRank();
+  }
+  if(id==='sc-done'){
+    if(!pickedSlot) pickedSlot = SLOTS[0];
+    renderDone();
+  }
+  if(id==='sc-invite'){
+    if(!pickedSlot) pickedSlot = SLOTS[0];
+    renderInvite();
+  }
+}
+function order(id){ return ['sc-create','sc-sent','sc-respond','sc-r-done','sc-rank','sc-confirm','sc-done','sc-invite'].indexOf(id); }
+function renderSent(){
+  $('#sTitle').textContent = mTitle();
+  $('#sentList').innerHTML = PEOPLE.map(x=>{
+    const me = x.id==='jisu';
+    return `<div class="sd-row">${ava(x)}
+      <div class="sd-name">${x.name}<em>${me?'나 · 조율자':(x.role==='req'?'필참':'선택')}</em></div>
+      <div class="sd-st ${me?'ok':'no'}">${me?'응답 완료':'응답 기다리는 중'}</div>
+    </div>`;
+  }).join('');
+}
+document.querySelectorAll('.rnav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(b.dataset.s==='sc-done' || b.dataset.s==='sc-invite'){
+      if(!pickedSlot){ pickedSlot = SLOTS[0]; }
+      if(b.dataset.s==='sc-done') renderDone();
+    }
+    go(b.dataset.s);
+  });
+});
+
+/* ---------------- ① create ---------------- */
+function renderCreate(){
+  $('#plist').innerHTML = PEOPLE.map(x=>`
+    <div class="p-row">
+      ${ava(x)}
+      <div class="p-name"><b>${x.name}</b><span>${x.sub}</span></div>
+      <div class="seg ${x.lock?'locked':''}">
+        <button class="${x.role==='req'?'sel':''}" onclick="setRole('${x.id}','req',this)">필참</button>
+        <button class="${x.role==='opt'?'sel':''}" onclick="setRole('${x.id}','opt',this)">선택</button>
+      </div>
+    </div>`).join('');
+}
+function setRole(id, role, btn){
+  p(id).role = role;
+  const seg = btn.parentElement;
+  seg.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  if(role==='req') excluded.delete(id);
+}
+
+/* ---------------- ② respond ---------------- */
+function renderGrid(){
+  const hours=[9,10,11,12,13,14,15,16,17];
+  let html='';
+  hours.forEach(h=>{
+    if(h===12){
+      html += `<div class="h">12시</div><div class="lunch-row">점심시간</div>`;
+      return;
+    }
+    html += `<div class="h">${h}시</div>`;
+    for(let d=0; d<5; d++){
+      const no = minjiNo.has(d+'-'+h), soft = minjiSoft.has(d+'-'+h);
+      html += `<div class="cell ${no?'no':soft?'soft':''}" onclick="toggleCell(${d},${h},this)"></div>`;
+    }
+  });
+  $('#grid').innerHTML = html;
+}
+/* 한 번 탭: 안 돼요 → 두 번 탭: 피하고 싶어요 → 세 번 탭: 가능 */
+function toggleCell(d,h,el){
+  const key = d+'-'+h;
+  if(minjiNo.has(key)){
+    minjiNo.delete(key); minjiSoft.add(key);
+    el.classList.remove('no'); el.classList.add('soft');
+  } else if(minjiSoft.has(key)){
+    minjiSoft.delete(key);
+    el.classList.remove('soft');
+  } else {
+    minjiNo.add(key);
+    el.classList.add('no');
+  }
+}
+/* 피하기 칩은 해당 시간대를 한 번에 '피하고 싶어요'로 칠해요 */
+function togglePref(key, el){
+  minjiPrefs[key] = !minjiPrefs[key];
+  el.classList.toggle('sel');
+  const cells = CHIP_CELLS[key];
+  if(!cells) return; // '오전이 좋아요'는 선호 정보로만 반영
+  cells.forEach(k=>{
+    if(minjiNo.has(k)) return;                    // 안 되는 시간은 그대로 둬요
+    minjiPrefs[key] ? minjiSoft.add(k) : minjiSoft.delete(k);
+  });
+  renderGrid();
+}
+/* 직접 입력 — 시간으로 바꿀 수 없는 사정은 메모로 조율자에게 그대로 전달돼요 */
+const minjiNotes = [];
+function showCustom(){
+  const r = $('#customRow');
+  r.hidden = false;
+  $('#customInput').focus();
+}
+function addCustom(){
+  const v = $('#customInput').value.trim();
+  if(!v) return;
+  minjiNotes.push(v);
+  const btn = document.createElement('button');
+  btn.className = 'pchip sel';
+  btn.textContent = v;
+  btn.onclick = ()=>{
+    const i = minjiNotes.indexOf(v);
+    i > -1 ? minjiNotes.splice(i,1) : minjiNotes.push(v);
+    btn.classList.toggle('sel');
+  };
+  $('#customChips').appendChild(btn);
+  $('#customInput').value = '';
+  $('#customRow').hidden = true;
+}
+
+/* ---------------- ③ rank ---------------- */
+function evalSlot(slot){
+  const inc = PEOPLE.filter(x=>!excluded.has(x.id));
+  const req = inc.filter(x=>x.role==='req');
+  const stOf = x => getStatus(slot,x)[0];
+  const reqOk = req.every(x=>stOf(x)!=='no');
+  const noP  = inc.filter(x=>stOf(x)==='no');
+  const softP= inc.filter(x=>stOf(x)==='soft');
+  const prefMet = inc.filter(x=>{const s=getStatus(slot,x); return s[0]==='ok' && s[1];}).length;
+  const full = reqOk && noP.length===0;
+  const perfect = full && softP.length===0;
+  return {inc, req, reqOk, noP, softP, prefMet, full, perfect};
+}
+function slotReason(slot, ev){
+  if(!ev.reqOk){
+    const who = ev.noP.filter(x=>x.role==='req').map(x=>x.name).join(', ');
+    return `<b>${who}</b>님이 필참인데 어려운 시간이에요.`;
+  }
+  if(ev.perfect) return excluded.size>0 ? `남은 ${ev.inc.length}명 모두 가능해요.` : `${ev.inc.length}명 모두 가능해요.`;
+  const parts=[];
+  ev.noP.forEach(x=>parts.push(`<b>${x.name}</b>님(선택)만 어려워요`));
+  ev.softP.forEach(x=>parts.push(`<b>${x.name}</b>님은 되지만 아쉬워요`));
+  return `필참 ${ev.req.length}명 모두 가능해요. ${parts.join(', ')}.`;
+}
+function fitbar(slot, ev){
+  const seg = x=>{
+    const out = excluded.has(x.id);
+    const st = out ? 'out' : getStatus(slot,x)[0];
+    const badge = st==='soft' ? `<i class="fbd soft">–</i>` : st==='no' ? `<i class="fbd no">×</i>` : '';
+    const bg = (st==='ok'||st==='soft') ? `style="background:${x.color}"` : '';
+    const title = out ? `${x.name} · 제외됨` : `${x.name} · ${STXT[st]}`;
+    return `<span class="fava ${st}" ${bg} title="${title}">${x.short.slice(-1)}${badge}</span>`;
+  };
+  const reqP = PEOPLE.filter(x=>x.role==='req');
+  const optP = PEOPLE.filter(x=>x.role==='opt');
+  return `<div class="fitrow">
+      <div class="fr-group"><div class="fr-avas">${reqP.map(seg).join('')}</div><span>필참</span></div>
+      ${optP.length? `<div class="fr-div"></div>
+      <div class="fr-group"><div class="fr-avas">${optP.map(seg).join('')}</div><span>선택</span></div>`:''}
+    </div>`;
+}
+function renderRank(){
+  /* lever */
+  $('#lever').innerHTML = PEOPLE.map(x=>{
+    if(x.role==='req')
+      return `<div class="lchip req">${ava(x)}<span class="p-nm">${x.short}</span><span class="role">필참</span></div>`;
+    const off = excluded.has(x.id);
+    return `<button class="lchip opt ${off?'off':''}" onclick="toggleEx('${x.id}')">
+      ${ava(x)}<span class="p-nm">${x.short}</span><span class="role">${off?'제외됨':'선택'}</span></button>`;
+  }).join('');
+
+  /* 직접 입력 메모 전달 */
+  const noteEl = $('#leverNote');
+  if(minjiNotes.length){
+    noteEl.hidden = false;
+    noteEl.innerHTML = `민지님이 남긴 메모 · “${minjiNotes.join('”, “')}”`;
+  } else {
+    noteEl.hidden = true;
+  }
+
+  /* sort & split */
+  const evald = SLOTS.map(s=>({s, ev:evalSlot(s)}));
+  const good = evald.filter(e=>e.ev.reqOk)
+    .sort((a,b)=> (a.ev.noP.length-b.ev.noP.length) || (a.ev.softP.length-b.ev.softP.length) || (b.ev.prefMet-a.ev.prefMet));
+  const bad  = evald.filter(e=>!e.ev.reqOk);
+
+  /* banner */
+  const hasPerfect = good.some(e=>e.ev.perfect);
+  const bn = $('#banner');
+  if(hasPerfect && excluded.size>0){
+    bn.className='banner good';
+    bn.innerHTML = `<b>모두 모일 수 있는 시간이 생겼어요</b><p>빠지는 분에게는 회의록을 공유할 수 있어요.<br>칩을 다시 누르면 돌아가요.</p>`;
+  } else if (hasPerfect){
+    bn.className='banner good';
+    bn.innerHTML = `<b>모두 되는 시간이 있어요</b><p>가장 위의 시간부터 확인해 보세요.</p>`;
+  } else {
+    bn.className='banner';
+    bn.innerHTML = `<b>모두 되는 시간은 없어요</b><p>대신 시간마다 누가, 얼마나 아쉬운지 보여드릴게요.<br>어디서 타협할지는 지수님이 정해요.</p>`;
+  }
+
+  /* FLIP — 이동 전 위치 기록 */
+  const prevRects = {};
+  document.querySelectorAll('#slots .slot').forEach(el=>{
+    prevRects[el.dataset.id] = el.getBoundingClientRect();
+  });
+  const firstRender = Object.keys(prevRects).length===0;
+
+  /* cards */
+  const card = (e, i, dim)=>{
+    const {s, ev} = e;
+    const isOpen = openDetail.has(s.id);
+    let tag='';
+    if(!dim){
+      if(ev.perfect) tag = `<span class="tag g2">모두 가능</span>`;
+      else if(i===0) tag = `<span class="tag g">가장 무난해요</span>`;
+    } else tag = `<span class="tag n">필참 빠짐</span>`;
+    return `<div class="slot ${dim?'dim':''} ${(!dim && i===0)?'best':''} ${(!dim && ev.perfect)?'full':''}" data-id="${s.id}">
+      <div class="slot-top"><b>${s.day} ${s.time}</b><span>${s.date}</span>${tag}</div>
+      ${fitbar(s, ev)}
+      <p class="reason">${slotReason(s, ev)}</p>
+      <div class="slot-detail ${isOpen?'open':''}" id="dt-${s.id}"><div class="sd-inner">
+        ${PEOPLE.map(x=>{
+          const out = excluded.has(x.id);
+          const st = getStatus(s,x);
+          const msg = out ? '이번 회의에서 빠져요 · 회의록 공유' : (st[1] || STXT[st[0]]);
+          return `<div class="sd-row ${out?'out':''}">${ava(x)}
+            <div class="sd-name">${x.name}<em>${x.role==='req'?'필참':'선택'}</em></div>
+            <div class="sd-st ${out?'no':st[0]}">${msg}</div></div>`;
+        }).join('')}
+      </div></div>
+      <div class="slot-actions">
+        <button class="s-btn more" onclick="toggleDetail('${s.id}', this)">${isOpen?'접기':'한 명씩 보기'}</button>
+        ${dim?'':`<button class="s-btn pick" onclick="pick('${s.id}')">이 시간으로</button>`}
+      </div>
+    </div>`;
+  };
+  $('#slots').innerHTML =
+    `<div class="sec-label">아쉬움이 적은 순이에요</div>`
+    + good.map((e,i)=>card(e,i,false)).join('')
+    + (bad.length? `<div class="sec-label">필참자가 빠져서 고를 수 없어요</div>` + bad.map((e,i)=>card(e,i,true)).join('') : '');
+
+  /* FLIP — 새 위치와의 차이만큼 되돌렸다가 제자리로 */
+  document.querySelectorAll('#slots .slot').forEach((el, idx)=>{
+    const old = prevRects[el.dataset.id];
+    if(!old){
+      if(firstRender){ el.classList.add('enter'); el.style.animationDelay = (idx*45)+'ms'; }
+      return;
+    }
+    const nr = el.getBoundingClientRect();
+    const dy = old.top - nr.top;
+    if(Math.abs(dy) > 2){
+      el.style.transition = 'none';
+      el.style.transform = `translateY(${dy}px)`;
+      el.getBoundingClientRect();
+      el.style.transition = 'transform .42s cubic-bezier(.22,1,.3,1)';
+      el.style.transform = '';
+      el.addEventListener('transitionend', ()=>{ el.style.transition=''; }, {once:true});
+    }
+  });
+}
+function toggleEx(id){
+  excluded.has(id) ? excluded.delete(id) : excluded.add(id);
+  renderRank();
+}
+function toggleDetail(id, btn){
+  const dt = document.getElementById('dt-'+id);
+  const open = dt.classList.toggle('open');
+  open ? openDetail.add(id) : openDetail.delete(id);
+  if(btn) btn.textContent = open ? '접기' : '한 명씩 보기';
+}
+
+/* ---------------- ④ confirm ---------------- */
+function pick(id){
+  pickedSlot = SLOTS.find(s=>s.id===id);
+  renderConfirm();
+  go('sc-confirm');
+}
+function tradeItems(slot){
+  const ev = evalSlot(slot);
+  const items=[];
+  PEOPLE.filter(x=>excluded.has(x.id)).forEach(x=>items.push({
+    t:`${x.name}님은 이번 회의에서 빠져요`,
+    d:`선택 참석이라 제외했어요.<br>초대 대신 회의록과 녹화를 공유할게요.`}));
+  ev.noP.forEach(x=>items.push({
+    t:`${x.name}님(선택)은 참석이 어려워요`,
+    d:`${getStatus(slot,x)[1]||'일정이 겹쳐요'}.<br>회의록과 녹화를 공유할게요.`}));
+  ev.softP.forEach(x=>items.push({
+    t:`${x.name}님에게 양해를 구해요`,
+    d:`${getStatus(slot,x)[1]||'선호하지 않는 시간이에요'}.<br>초대장에 짧은 양해 메시지를 함께 보낼게요.`}));
+  return items;
+}
+function renderConfirm(){
+  const s = pickedSlot, items = tradeItems(s);
+  const ev = evalSlot(s);
+  $('#confirm-body').innerHTML = `
+    <div class="picked">
+      <div class="eyebrow">${mTitle()} · 1시간</div>
+      <b>${s.date} ${s.day}요일 ${s.time}</b>
+      <p>${ev.inc.filter(x=>getStatus(s,x)[0]!=='no').length}명이 함께해요</p>
+    </div>
+    <div class="card">
+      <h3>이 시간의 타협</h3>
+      ${items.length
+        ? items.map(it=>`<label class="trade"><input type="checkbox" checked><div><b>${it.t}</b><span>${it.d}</span></div></label>`).join('')
+        : `<div class="all-good"><div class="ok-ic">✓</div><p>모두에게 괜찮은 시간이에요.<br>별도 양해 없이 초대장만 보내면 돼요.</p></div>`}
+    </div>
+    <p class="hint">타협한 내용은 초대에 그대로 담아 보내요.<br>그래야 다음 조율이 쉬워져요.</p>`;
+}
+
+/* ---------------- ⑤ done ---------------- */
+function renderDone(){
+  if(!pickedSlot) pickedSlot = SLOTS[0];
+  const s = pickedSlot;
+  $('#done-title').textContent = `${s.day}요일 ${s.time}, 확정했어요`;
+  $('#done-list').innerHTML = PEOPLE.map(x=>{
+    const out = excluded.has(x.id);
+    const st = getStatus(s,x)[0];
+    let msg='초대장을 보냈어요', cls='ok';
+    if(out || st==='no'){ msg='회의록 · 녹화 공유'; cls='no'; }
+    else if(st==='soft'){ msg='초대장 + 양해 메시지'; cls='soft'; }
+    return `<div class="sd-row">${ava(x)}
+      <div class="sd-name">${x.name}<em>${x.role==='req'?'필참':'선택'}</em></div>
+      <div class="sd-st ${cls}">${msg}</div></div>`;
+  }).join('');
+}
+/* ---------------- ②.5 r-done (참석자 응답 완료) ---------------- */
+function renderRDone(){
+  const prefLabels = {early:'이른 아침은 피하고 싶어요', lunch:'점심 직후는 피하고 싶어요', late:'늦은 오후는 피하고 싶어요', morning:'오전이 좋아요'};
+  const prefs = Object.keys(minjiPrefs).filter(k=>minjiPrefs[k]).map(k=>prefLabels[k]);
+  const rows = [
+    ['안 되는 시간', minjiNo.size + '개 시간대'],
+    ['피하고 싶은 시간', minjiSoft.size ? minjiSoft.size + '개 시간대' : '없어요'],
+    ['평소 선호', prefs.length ? prefs.join(' · ') : '없어요'],
+  ];
+  if(minjiNotes.length) rows.push(['메모', '“' + minjiNotes.join('”, “') + '”']);
+  $('#rsum').innerHTML = rows.map(r=>
+    `<div class="sd-row"><div class="sd-k">${r[0]}</div><div class="sd-v">${r[1]}</div></div>`).join('');
+}
+
+/* ---------------- ⑥ invite (참석자가 받은 초대) ---------------- */
+function renderInvite(){
+  if(!pickedSlot) pickedSlot = SLOTS[0];
+  const s = pickedSlot;
+  const out = excluded.has('minji');
+  const st = getStatus(s, p('minji'));
+  const ev = evalSlot(s);
+  const okN = ev.inc.filter(x=>getStatus(s,x)[0]!=='no').length;
+  let lede, msg, cta, done;
+  if(out){
+    lede = `이번 회의에서는 빠져요.<br>내용은 회의록으로 받아요.`;
+    msg = `일정 부담을 덜어드리려고 초대에서 뺐어요. 끝나면 회의록과 녹화를 바로 공유할게요.`;
+    cta = '회의록 받기'; done = '받기로 했어요 ✓';
+  } else if(st[0]==='no'){
+    lede = `이 시간엔 참석이 어려워요.<br>내용은 회의록으로 받아요.`;
+    msg = `${st[1] || '일정이 겹친다'}고 답해주셨죠. 무리해서 오지 않으셔도 돼요. 회의록과 녹화를 공유할게요.`;
+    cta = '회의록 받기'; done = '받기로 했어요 ✓';
+  } else if(st[0]==='soft'){
+    lede = `피하고 싶다던 시간이라,<br>양해 메시지가 함께 왔어요.`;
+    msg = `피하고 싶은 시간인 걸 알지만, 모두가 되는 시간이 이때뿐이었어요. 이번만 양해 부탁드려요.`;
+    cta = '참석할게요'; done = '참석을 알렸어요 ✓';
+  } else {
+    lede = `민지님이 답한 조건에<br>맞는 시간이에요.`;
+    msg = `안 되는 시간과 선호를 모두 반영해서 골랐어요. 참석할게요 버튼을 누르면 캘린더에 바로 등록돼요.`;
+    cta = '참석할게요'; done = '참석을 알렸어요 ✓';
+  }
+  const attendable = !out && st[0]!=='no';
+  $('#invite-body').innerHTML = `
+    <p class="lede">${lede}</p>
+    <div class="inv-time${attendable?'':' off'}">
+      <div class="eyebrow">${mTitle()} · 1시간</div>
+      <b>${s.date} ${s.day}요일 ${s.time}</b>
+      <p>${okN}명이 함께해요</p>
+    </div>
+    <div class="inv-msg">
+      <div class="im-from"><span class="ava" style="background:#3E7BFA;width:26px;height:26px;font-size:10.5px;color:#fff">지수</span><b>김지수</b><span>조율자</span></div>
+      <p>${msg}</p>
+    </div>`;
+  const btn = $('#invite-cta');
+  btn.textContent = cta;
+  btn.className = 'cta';
+  const attend = !out && (st[0]==='ok' || st[0]==='soft');
+  btn.onclick = ()=>{
+    btn.textContent = done;
+    btn.classList.add('ghost');
+    btn.onclick = null;
+    $('#invite-body .lede').style.display = 'none';
+    $('#invite-body').insertAdjacentHTML('afterbegin', `
+      <div class="inv-ok">
+        <div class="ok-ic">✓</div>
+        <div>
+          <b>${attend ? '참석을 알렸어요' : '회의록을 받기로 했어요'}</b>
+          <span>${attend ? '캘린더에 등록했어요. 시작 10분 전에 알려드릴게요.' : '회의가 끝나면 회의록과 녹화를 바로 보내드릴게요.'}</span>
+        </div>
+      </div>`);
+    $('#invite-body').scrollTop = 0;
+  };
+}
+
+function resetAll(){
+  excluded.clear(); openDetail.clear(); pickedSlot=null;
+  PEOPLE.forEach((x,i)=>x.role = i<4 ? 'req':'opt');
+  minjiNo.clear(); minjiSoft.clear();
+  for(let d=0; d<5; d++) minjiNo.add(d+'-10');
+  for(let h=13; h<=17; h++) minjiNo.add('0-'+h);
+  minjiPrefs.early=false; minjiPrefs.lunch=false; minjiPrefs.morning=true; minjiPrefs.late=false;
+  minjiNotes.length = 0;
+  $('#customChips').innerHTML = '';
+  $('#customRow').hidden = true;
+  renderCreate(); renderGrid(); renderPrefChips();
+  go('sc-create');
+}
+function renderPrefChips(){
+  document.querySelectorAll('.pchip').forEach(el=>{
+    el.classList.toggle('sel', !!minjiPrefs[el.dataset.pref]);
+  });
+}
+
+renderCreate(); renderGrid(); renderPrefChips(); renderRank();
+</script>
+</body>
+</html>
