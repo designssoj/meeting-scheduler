@@ -15,23 +15,32 @@
   --r-lg:22px; --r-md:16px; --r-sm:10px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
+html{height:100%}
 body{
   font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
   background:var(--bg); color:var(--ink);
-  display:flex; flex-direction:column; align-items:center;
+  display:flex; flex-direction:row; align-items:center; justify-content:center;
   min-height:100vh; min-height:100dvh;
-  padding:36px 16px 44px; gap:18px;
+  padding:44px 48px; gap:56px;
   letter-spacing:-0.01em;
 }
-/* 위아래 유연한 여백 — 공간이 남으면 가운데로, 부족하면 0으로 줄어 스크롤 가능 */
-body::before, body::after{content:""; flex:1 0 12px}
+/* ---------- 왼쪽: 소개 패널 ---------- */
+.intro{width:300px; flex:none}
+.intro h1{font-size:30px; font-weight:800; letter-spacing:-0.03em; line-height:1.25}
+.intro .tagline{font-size:16px; font-weight:600; color:var(--sub); margin-top:8px}
+.intro .desc{font-size:14px; color:var(--sub); line-height:1.7; margin-top:16px; word-break:keep-all}
+.intro .tip{
+  display:inline-flex; align-items:center; gap:7px; margin-top:20px;
+  background:#fff; border:1.5px solid var(--line); border-radius:100px;
+  padding:9px 15px; font-size:12.5px; font-weight:600; color:var(--sub);
+}
+.intro .tip i{font-style:normal}
 /* ---------- phone frame ---------- */
 .frame{
-  width:min(393px,100%);
-  height:min(800px, calc(100vh - 200px));
-  height:min(800px, calc(100dvh - 200px));
-  min-height:600px;
+  width:min(393px, 100%);
+  height:852px;
+  flex:none;
+  transform-origin:top center;
   background:var(--card); border-radius:34px; overflow:hidden; position:relative;
   box-shadow:0 24px 60px rgba(25,31,40,.14), 0 2px 8px rgba(25,31,40,.06);
 }
@@ -44,15 +53,17 @@ body::before, body::after{content:""; flex:1 0 12px}
 .screen.on{transform:translateX(0); opacity:1; pointer-events:auto}
 .screen.left{transform:translateX(-24px)}
 .top{
-  padding:22px 22px 12px; display:flex; align-items:center; gap:10px; flex:none;
+  padding:30px 22px 12px; display:flex; align-items:center; gap:10px; flex:none;
 }
 .back{
   width:34px;height:34px;border:none;background:var(--soft-bg);border-radius:50%;
   cursor:pointer;color:var(--sub);font-size:16px;display:flex;align-items:center;justify-content:center;
 }
 .top h1{font-size:19px;font-weight:700;letter-spacing:-0.02em}
-.body{flex:1; overflow-y:auto; padding:6px 22px 20px; scrollbar-width:none}
-.body::-webkit-scrollbar{display:none}
+.body{flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:6px 22px 20px; scrollbar-width:thin; scrollbar-color:#D6DBE1 transparent}
+.body::-webkit-scrollbar{width:5px}
+.body::-webkit-scrollbar-thumb{background:#D6DBE1; border-radius:3px}
+.body::-webkit-scrollbar-track{background:transparent}
 .foot{flex:none; padding:12px 22px 22px; background:linear-gradient(to top, #fff 70%, rgba(255,255,255,0))}
 .cta{
   width:100%; padding:16px; border:none; border-radius:var(--r-md);
@@ -160,12 +171,12 @@ body::before, body::after{content:""; flex:1 0 12px}
 .fr-avas{display:flex; gap:6px}
 .fr-group>span{font-size:10.5px; color:var(--mut); font-weight:600}
 .fr-div{width:1px; align-self:stretch; background:var(--line)}
-.fava{position:relative; width:27px; height:27px; border-radius:50%; flex:none;
+.fava{position:relative; width:33px; height:33px; border-radius:50%; flex:none;
   display:flex; align-items:center; justify-content:center;
-  font-size:11.5px; font-weight:700; color:#fff}
+  font-size:11px; font-weight:700; color:#fff}
 .fava.no{background:var(--no-bg); color:var(--mut)}
 .fava.out{background:#fff; border:1.5px dashed var(--no); color:var(--no)}
-.fbd{position:absolute; right:-4px; bottom:-4px; width:13px; height:13px; border-radius:50%;
+.fbd{position:absolute; right:-4px; bottom:-4px; width:15px; height:15px; border-radius:50%;
   font-style:normal; font-size:9px; font-weight:800;
   display:flex; align-items:center; justify-content:center; border:1.5px solid #fff}
 .fbd.soft{background:#F5B83D; color:#5C3D00}
@@ -266,7 +277,7 @@ body::before, body::after{content:""; flex:1 0 12px}
 .card h3{font-size:13px; font-weight:700; color:var(--mut); margin-bottom:4px}
 .trade{display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--soft-bg); align-items:flex-start}
 .trade:last-child{border-bottom:none}
-.trade input{margin-top:3px; width:17px; height:17px; accent-color:var(--ink); flex:none}
+.trade-ic{margin-top:2px; width:19px; height:19px; border-radius:6px; background:var(--green-bg); color:var(--green); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none}
 .trade div b{font-size:14px; font-weight:600; display:block}
 .trade div span{font-size:12.5px; color:var(--mut); line-height:1.5; display:block; margin-top:2px}
 .all-good{display:flex; align-items:center; gap:10px; padding:6px 0}
@@ -294,8 +305,8 @@ body::before, body::after{content:""; flex:1 0 12px}
 .screen.part::before{background:#8E7CF0}
 
 /* ---------- reviewer nav ---------- */
-.rnav{display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; justify-content:center}
-.rnav .grp{display:flex; flex-direction:column; gap:7px; align-items:center}
+.rnav{display:flex; flex-direction:column; gap:26px; align-items:flex-start; width:250px; flex:none}
+.rnav .grp{display:flex; flex-direction:column; gap:10px; align-items:flex-start}
 .rnav .grp em{
   font-style:normal; font-size:11px; font-weight:700; color:var(--mut);
   display:flex; align-items:center; gap:5px; letter-spacing:0;
@@ -303,11 +314,12 @@ body::before, body::after{content:""; flex:1 0 12px}
 .rnav .grp em i{width:7px;height:7px;border-radius:50%;flex:none}
 .rnav .grp.coord em i{background:#3E7BFA}
 .rnav .grp.part em i{background:#8E7CF0}
-.rnav .row{display:flex; gap:6px; flex-wrap:wrap; justify-content:center}
+.rnav .row{display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-start}
 .rnav button{
   border:none; background:#fff; border:1px solid var(--line); border-radius:100px;
-  font-family:inherit; font-size:12px; font-weight:600; color:var(--sub);
-  padding:7px 13px; cursor:pointer; transition:all .15s;
+  font-family:inherit; font-size:13px; font-weight:600; color:var(--sub);
+  padding:10px 16px; cursor:pointer; transition:all .15s;
+  box-shadow:0 1px 3px rgba(25,31,40,.05);
 }
 .rnav button.cur{background:var(--ink); border-color:var(--ink); color:#fff}
 /* 받은 초대 화면 */
@@ -346,10 +358,129 @@ body::before, body::after{content:""; flex:1 0 12px}
 }
 .inv-ok b{display:block;font-size:15px;font-weight:700;color:var(--green);letter-spacing:-0.02em}
 .inv-ok span{font-size:12.5px;color:var(--sub);line-height:1.5;display:block;margin-top:2px;word-break:keep-all}
-@media (max-height:760px){ body{padding:24px 12px 32px; gap:14px} .frame{border-radius:26px; min-height:560px} }
+@media (max-width:1150px){
+  body{flex-direction:column; gap:18px; padding:28px 16px 40px}
+  .intro{width:min(393px,100%); text-align:center}
+  .intro .tip{margin-top:14px}
+  .rnav{flex-direction:row; flex-wrap:wrap; justify-content:center; width:auto; gap:18px}
+  .rnav .grp{align-items:center}
+  .rnav .row{justify-content:center}
+}
+
+
+/* ---------- 가독성 확대 (웹 컨텍스트 보정) ---------- */
+.top h1{font-size:20.5px}
+.lede{font-size:16px}
+.field label{font-size:13px}
+.meta-chip b{font-size:16px}
+.meta-chip span{font-size:12.5px}
+.p-row{padding:14px 0}
+.ava{width:40px; height:40px; font-size:14px}
+.p-name b{font-size:16px}
+.p-name span{font-size:13px}
+.seg button{font-size:13px; padding:7px 12px}
+.hint{font-size:13.5px}
+.cta{font-size:16.5px}
+.pchip{font-size:14px}
+.grid-head span{font-size:11.5px}
+.cell{height:27px}
+.banner b{font-size:17px}
+.banner p{font-size:14px}
+.slot-top b{font-size:18px}
+.slot-top span{font-size:13.5px}
+.tag{font-size:11.5px}
+.reason{font-size:14.5px}
+.sd-name{font-size:14px; width:70px}
+.sd-st{font-size:13px; word-break:keep-all; line-height:1.45}
+.lchip{font-size:13px}
+.trade div b{font-size:14.5px}
+.trade div span{font-size:13px}
+.picked b{font-size:23px}
+.inv-time b{font-size:22px}
+.inv-msg p{font-size:14.5px}
+.done-wrap h2{font-size:22px}
+.rsum .sd-k{font-size:14px}
+.rsum .sd-v{font-size:13px}
+
+/* ---------- 간격 확대 (리스트·카드 호흡) ---------- */
+.body{padding:8px 24px 24px}
+.sent-list{padding:12px 20px; margin-top:18px}
+.done-list{padding:12px 20px; margin-top:28px}
+.rsum{padding:12px 20px; margin-top:24px}
+.sd-row{padding:11px 0; gap:12px}
+.sd-row .ava{width:31px; height:31px; font-size:11px}
+.sd-inner{margin-top:15px; padding-top:8px}
+.banner{padding:18px 20px; margin-bottom:16px}
+.rank-ctx{margin-bottom:12px}
+.lever{margin-bottom:18px}
+.lever-label{margin-bottom:11px}
+.lever-row{gap:9px}
+.sec-label{margin:24px 2px 12px}
+.slot{padding:18px 20px 17px; margin-bottom:14px}
+.fitrow{margin:15px 0 13px; gap:14px}
+.fr-avas{gap:7px}
+.slot-actions{margin-top:15px; gap:9px}
+.card{padding:18px 20px; margin-top:14px}
+.card h3{margin-bottom:8px}
+.trade{padding:13px 0; gap:12px}
+.grid-wrap{padding:18px 16px 16px; margin-top:16px}
+.pref-chips{gap:9px; margin-top:14px}
+.inv-msg{padding:18px 20px; margin-top:16px}
+.inv-time{padding:20px 22px; margin-top:16px}
+.picked{padding:22px 22px 20px}
+
+/* ---------- 비주얼 라이트닝: 선을 걷어내고 면과 그림자로 ---------- */
+/* 입력: 테두리 대신 면 */
+.field input[type=text]{border:none; background:var(--soft-bg)}
+.field input[type=text]:focus{outline:none; background:#EEF1F4}
+.custom-row input{border:none; background:var(--soft-bg)}
+.custom-row input:focus{outline:none; background:#EEF1F4}
+
+/* 칩: 면 채움 */
+.pchip{border:none; background:var(--soft-bg); padding:10px 15px}
+.pchip.sel{background:var(--ink); color:#fff}
+.pchip.addc{background:transparent; border:1.5px dashed var(--line)}
+
+/* 참석자 레버 칩: 흰 면 + 옅은 그림자 */
+.lchip{border:none; background:#fff; box-shadow:0 1px 4px rgba(25,31,40,.07)}
+.lchip.req{background:var(--soft-bg); box-shadow:none}
+.lchip.opt.off{background:transparent; box-shadow:none; border:1.5px dashed var(--line)}
+
+/* 시간 카드: 테두리 제거, 상태는 은은한 아웃라인+그림자로 */
+.slot{border:none; box-shadow:0 2px 10px rgba(25,31,40,.05)}
+.slot.best{box-shadow:0 0 0 1.5px var(--green-line), 0 5px 16px rgba(0,160,94,.09)}
+.slot.full{box-shadow:0 0 0 1.5px var(--green), 0 5px 16px rgba(0,160,94,.12)}
+.slot.dim{box-shadow:none}
+
+/* 확정 화면 카드: 면 채움 */
+.card{border:none; background:var(--soft-bg)}
+
+/* 시간 그리드: 셀 테두리 제거 — 흰 셀이 회색 판 위에서 자연히 구분됨 */
+.cell{border:none}
+
+/* 오른쪽 내비게이션·소개 힌트: 테두리 제거 */
+.rnav button{border:none; box-shadow:0 1px 4px rgba(25,31,40,.06)}
+.rnav button.cur{box-shadow:none}
+.intro .tip{border:none; box-shadow:0 1px 4px rgba(25,31,40,.06)}
+
+/* 보조 텍스트 한 톤 연하게 — 시선이 본문에 집중되도록 */
+.hint{color:var(--mut)}
+
+/* 호흡 추가 */
+.field{margin-top:22px}
+.meta-row{gap:10px; margin-top:12px}
+.grid, .grid-head{gap:5px}
+.lede{margin-top:2px}
 </style>
 </head>
 <body>
+
+<aside class="intro">
+  <h1>맞춰볼게요</h1>
+  <p class="tagline">6명이 회의 일정을 잡는 경험</p>
+  <p class="desc">모두가 되는 시간이 없을 때도 멈추지 않는 일정 조율을 설계했어요. 참석자는 안 되는 시간만 간단히 답하고, 조율자는 아쉬움이 적은 순서로 정리된 후보에서 판단만 해요.</p>
+  <p class="tip"><i>👉</i> 화면 속 버튼을 직접 눌러 체험할 수 있어요</p>
+</aside>
 
 <div class="frame" id="frame">
 
@@ -409,11 +540,11 @@ body::before, body::after{content:""; flex:1 0 12px}
         <p class="prefill-note">반복 일정은 한 번만 알려주면 기억해요.<br>지난번에 답한 매일 스크럼과 월요일 세미나는 미리 채워뒀어요.</p>
       </div>
       <div class="field">
-        <label>평소엔 어떤 편인가요?</label>
+        <label>평소 선호도 함께 알려주세요</label>
         <div class="pref-chips">
-          <button class="pchip" data-pref="early" onclick="togglePref('early', this)">이른 아침은 피하고 싶어요</button>
-          <button class="pchip" data-pref="lunch" onclick="togglePref('lunch', this)">점심 직후는 피하고 싶어요</button>
-          <button class="pchip" data-pref="late" onclick="togglePref('late', this)">늦은 오후는 피하고 싶어요</button>
+          <button class="pchip" data-pref="early" onclick="togglePref('early', this)">이른 아침은 피해요</button>
+          <button class="pchip" data-pref="lunch" onclick="togglePref('lunch', this)">점심 직후는 피해요</button>
+          <button class="pchip" data-pref="late" onclick="togglePref('late', this)">늦은 오후는 피해요</button>
           <button class="pchip sel" data-pref="morning" onclick="togglePref('morning', this)">오전이 좋아요</button>
           <span id="customChips" style="display:contents"></span>
           <button class="pchip addc" onclick="showCustom()">+ 직접 입력</button>
@@ -755,7 +886,7 @@ function fitbar(slot, ev){
     const badge = st==='soft' ? `<i class="fbd soft">–</i>` : st==='no' ? `<i class="fbd no">×</i>` : '';
     const bg = (st==='ok'||st==='soft') ? `style="background:${x.color}"` : '';
     const title = out ? `${x.name} · 제외됨` : `${x.name} · ${STXT[st]}`;
-    return `<span class="fava ${st}" ${bg} title="${title}">${x.short.slice(-1)}${badge}</span>`;
+    return `<span class="fava ${st}" ${bg} title="${title}">${x.short}${badge}</span>`;
   };
   const reqP = PEOPLE.filter(x=>x.role==='req');
   const optP = PEOPLE.filter(x=>x.role==='opt');
@@ -828,7 +959,7 @@ function renderRank(){
         ${PEOPLE.map(x=>{
           const out = excluded.has(x.id);
           const st = getStatus(s,x);
-          const msg = out ? '이번 회의에서 빠져요 · 회의록 공유' : (st[1] || STXT[st[0]]);
+          const msg = out ? '빠져요 · 회의록 공유' : (st[1] || STXT[st[0]]);
           return `<div class="sd-row ${out?'out':''}">${ava(x)}
             <div class="sd-name">${x.name}<em>${x.role==='req'?'필참':'선택'}</em></div>
             <div class="sd-st ${out?'no':st[0]}">${msg}</div></div>`;
@@ -907,7 +1038,7 @@ function renderConfirm(){
     <div class="card">
       <h3>이 시간의 타협</h3>
       ${items.length
-        ? items.map(it=>`<label class="trade"><input type="checkbox" checked><div><b>${it.t}</b><span>${it.d}</span></div></label>`).join('')
+        ? items.map(it=>`<div class="trade"><span class="trade-ic">✓</span><div><b>${it.t}</b><span>${it.d}</span></div></div>`).join('')
         : `<div class="all-good"><div class="ok-ic">✓</div><p>모두에게 괜찮은 시간이에요.<br>별도 양해 없이 초대장만 보내면 돼요.</p></div>`}
     </div>
     <p class="hint">타협한 내용은 초대에 그대로 담아 보내요.<br>그래야 다음 조율이 쉬워져요.</p>`;
@@ -931,7 +1062,7 @@ function renderDone(){
 }
 /* ---------------- ②.5 r-done (참석자 응답 완료) ---------------- */
 function renderRDone(){
-  const prefLabels = {early:'이른 아침은 피하고 싶어요', lunch:'점심 직후는 피하고 싶어요', late:'늦은 오후는 피하고 싶어요', morning:'오전이 좋아요'};
+  const prefLabels = {early:'이른 아침은 피해요', lunch:'점심 직후는 피해요', late:'늦은 오후는 피해요', morning:'오전이 좋아요'};
   const prefs = Object.keys(minjiPrefs).filter(k=>minjiPrefs[k]).map(k=>prefLabels[k]);
   const rows = [
     ['안 되는 시간', minjiNo.size + '개 시간대'],
@@ -1021,7 +1152,34 @@ function renderPrefChips(){
   });
 }
 
+/* ---------------- 한 화면 맞춤 ----------------
+   1920x1080 등 일반 웹 화면에서 프레임+내비게이션이 스크롤 없이 다 보이도록,
+   내부 설계(393x852)는 그대로 두고 전체를 비율 축소해요. 모바일 실기기는 제외. */
+function fitStage(){
+  const f = document.getElementById('frame');
+  const nav = document.getElementById('rnav');
+  if(window.innerWidth <= 480){            // 실기기 모바일: 축소 없이 원본
+    f.style.transform = ''; f.style.marginBottom = '';
+    return;
+  }
+  const wide = window.innerWidth > 1150;    // 3단 가로 레이아웃 여부
+  const reserved = wide ? 120 : nav.offsetHeight + 140;
+  const avail = window.innerHeight - reserved;
+  const s = Math.min(1, avail / 852);
+  f.style.transform = s < 1 ? `scale(${s})` : '';
+  f.style.marginBottom = s < 1 ? `${-852 * (1 - s)}px` : '';
+}
+window.addEventListener('resize', fitStage);
+/* 프레임 위에서의 휠은 항상 현재 화면의 내부 스크롤로 — 환경과 무관하게 보장 */
+document.getElementById('frame').addEventListener('wheel', (e)=>{
+  const b = document.querySelector('.screen.on .body');
+  if(!b) return;
+  b.scrollTop += e.deltaY;
+  e.preventDefault();
+}, {passive:false});
+
 renderCreate(); renderGrid(); renderPrefChips(); renderRank();
+fitStage();
 </script>
 </body>
 </html>
